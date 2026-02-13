@@ -2,17 +2,21 @@ import { useState, useEffect } from 'react';
 import { Container, Typography, List, ListItem, ListItemText, Paper, Button, Chip } from '@mui/material';
 import api from '../services/api';
 
+import { useAuth } from '../context/AuthContext';
+
 const Appointments = () => {
     const [appointments, setAppointments] = useState([]);
-    const patientId = 1;
+    const { user } = useAuth();
 
     useEffect(() => {
-        fetchAppointments();
-    }, []);
+        if (user && user.id) {
+            fetchAppointments();
+        }
+    }, [user]);
 
     const fetchAppointments = async () => {
         try {
-            const response = await api.get(`/appointments/patient/${patientId}`);
+            const response = await api.get(`/appointments/patient/${user.id}`);
             setAppointments(response.data);
         } catch (error) {
             console.error(error);

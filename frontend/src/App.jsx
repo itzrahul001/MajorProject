@@ -10,6 +10,7 @@ import Appointments from './pages/Appointments'
 import Doctors from './pages/Doctors'
 import MedicalRecords from './pages/MedicalRecords'
 import AddHospital from './pages/AddHospital'
+import AddDoctor from './pages/AddDoctor'
 import { AuthProvider } from './context/AuthContext'
 
 const darkTheme = createTheme({
@@ -35,6 +36,7 @@ function App() {
                         <Route path="/doctors" element={<Doctors />} />
                         <Route path="/medical-records" element={<MedicalRecords />} />
                         <Route path="/add-hospital" element={<AddHospital />} />
+                        <Route path="/add-doctor" element={<AddDoctor />} />
                     </Routes>
                 </BrowserRouter>
             </AuthProvider>

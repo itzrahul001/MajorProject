@@ -3,6 +3,8 @@ package com.smarthealthcare.controller;
 import com.smarthealthcare.dto.JwtAuthResponse;
 import com.smarthealthcare.dto.LoginDto;
 import com.smarthealthcare.dto.RegisterDto;
+import com.smarthealthcare.entity.User;
+import com.smarthealthcare.repository.UserRepository;
 import com.smarthealthcare.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private AuthService authService;
+    private UserRepository userRepository;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, UserRepository userRepository) {
         this.authService = authService;
+        this.userRepository = userRepository;
     }
 
     // Build Login REST API
@@ -33,6 +37,11 @@ public class AuthController {
                 .getContext().getAuthentication().getPrincipal()).getAuthorities().stream().findFirst().get()
                 .getAuthority();
         jwtAuthResponse.setRole(role);
+
+        User user = userRepository.findByEmail(loginDto.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        jwtAuthResponse.setId(user.getId());
+        jwtAuthResponse.setName(user.getName());
 
         return ResponseEntity.ok(jwtAuthResponse);
     }

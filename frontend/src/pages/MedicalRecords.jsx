@@ -12,21 +12,15 @@ const MedicalRecords = () => {
     const [message, setMessage] = useState('');
     const { user } = useAuth();
 
-    // Note: user object in auth context should ideally have id.
-    // We need to decode token or get user details. For now assumes user object has id or we fetch it.
-    // Actually, in AuthContext I only stored token. I should likely fetch user profile. 
-    // For this example, I will assume I can get patientId from somewhere or I need a profile endpoint.
-    // HACK: I will use a hardcoded patient ID 1 for now if not available, OR decode token.
-    // Better: fetch /api/me (need to implement in backend)
-    const patientId = 1; // REPLACE WITH REAL ID
-
     useEffect(() => {
-        fetchRecords();
-    }, []);
+        if (user && user.id) {
+            fetchRecords();
+        }
+    }, [user]);
 
     const fetchRecords = async () => {
         try {
-            const response = await api.get(`/medical-records/patient/${patientId}`);
+            const response = await api.get(`/medical-records/patient/${user.id}`);
             setRecords(response.data);
         } catch (err) {
             console.error(err);
@@ -48,7 +42,7 @@ const MedicalRecords = () => {
 
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('patientId', patientId);
+        formData.append('patientId', user.id);
         formData.append('notes', notes);
 
         try {

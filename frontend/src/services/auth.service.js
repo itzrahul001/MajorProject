@@ -6,6 +6,8 @@ const AuthService = {
         if (response.data.accessToken) {
             localStorage.setItem('token', response.data.accessToken);
             localStorage.setItem('role', response.data.role);
+            localStorage.setItem('id', response.data.id);
+            localStorage.setItem('name', response.data.name);
         }
         return response.data;
     },
@@ -17,12 +19,16 @@ const AuthService = {
     logout: () => {
         localStorage.removeItem('token');
         localStorage.removeItem('role');
+        localStorage.removeItem('id');
+        localStorage.removeItem('name');
     },
 
     getCurrentUser: () => {
         const token = localStorage.getItem('token');
         const role = localStorage.getItem('role');
-        return token ? { token, role } : null;
+        const id = localStorage.getItem('id');
+        const name = localStorage.getItem('name');
+        return token ? { token, role, id, name } : null;
     },
 };
 
