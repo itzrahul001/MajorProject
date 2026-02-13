@@ -1,0 +1,65 @@
+############################################
+# ======= GENERAL =======
+############################################
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+############################################
+# ======= IDE FILES =======
+############################################
+
+# VS Code
+.vscode/
+
+# IntelliJ / IDEA
+.idea/
+*.iml
+
+############################################
+# ======= BACKEND (Spring Boot) =======
+############################################
+
+# Maven target folder
+backend/target/
+target/
+
+# Maven wrapper logs
+.mvn/wrapper/maven-wrapper.jar
+
+# Application properties (if sensitive)
+backend/src/main/resources/application.properties
+backend/src/main/resources/application.yml
+
+############################################
+# ======= FRONTEND (React + Vite) =======
+############################################
+
+# Node modules
+frontend/node_modules/
+node_modules/
+
+# Vite build output
+frontend/dist/
+dist/
+
+############################################
+# ======= ENV FILES =======
+############################################
+
+.env
+frontend/.env
+backend/.env
+
+############################################
+# ======= Misc =======
+############################################
+
+*.class
+*.jar
+*.war
+*.ear
