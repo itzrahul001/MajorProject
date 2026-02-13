@@ -12,8 +12,13 @@ const AuthService = {
         return response.data;
     },
 
-    register: async (name, email, password, role) => {
-        return api.post('/auth/register', { name, email, password, role });
+    register: async (name, email, password, role, hospitalId = null, specialization = null) => {
+        const payload = { name, email, password, role };
+        if (role === 'DOCTOR') {
+            payload.hospitalId = hospitalId;
+            payload.specialization = specialization;
+        }
+        return api.post('/auth/register', payload);
     },
 
     logout: () => {

@@ -15,4 +15,6 @@ public class RegisterDto {
     private String email;
     private String password;
     private Role role;
+    private Long hospitalId; // Optional: Required only for DOCTOR role
+    private String specialization; // Optional: Required only for DOCTOR role
 }

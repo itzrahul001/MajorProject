@@ -1,23 +1,40 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { TextField, Button, Container, Typography, Box, Alert, MenuItem } from '@mui/material';
+import { TextField, Button, Container, Typography, Box, Alert, MenuItem, FormControl, InputLabel, Select } from '@mui/material';
 import { toast } from 'react-toastify';
+import api from '../services/api';
 
 const Register = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('PATIENT');
+    const [hospitalId, setHospitalId] = useState('');
+    const [specialization, setSpecialization] = useState('');
+    const [hospitals, setHospitals] = useState([]);
     const [error, setError] = useState('');
     const { register } = useAuth();
     const navigate = useNavigate();
+
+
+    useEffect(() => {
+        const fetchHospitals = async () => {
+            try {
+                const response = await api.get('/hospitals');
+                setHospitals(response.data);
+            } catch (err) {
+                console.error('Failed to fetch hospitals:', err);
+            }
+        };
+        fetchHospitals();
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         try {
-            await register(name, email, password, role);
+            await register(name, email, password, role, hospitalId || null, specialization || null);
             toast.success('Registration Successful! Please Login.');
             navigate('/login');
         } catch (err) {
@@ -92,6 +109,34 @@ const Register = () => {
                         <MenuItem value="DOCTOR">Doctor</MenuItem>
                         <MenuItem value="ADMIN">Admin</MenuItem>
                     </TextField>
+                    {role === 'DOCTOR' && (
+                        <>
+                            <FormControl fullWidth margin="normal" required>
+                                <InputLabel>Hospital</InputLabel>
+                                <Select
+                                    value={hospitalId}
+                                    label="Hospital"
+                                    onChange={(e) => setHospitalId(e.target.value)}
+                                >
+                                    {hospitals.map((hospital) => (
+                                        <MenuItem key={hospital.id} value={hospital.id}>
+                                            {hospital.name}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                            <TextField
+                                margin="normal"
+                                required
+                                fullWidth
+                                id="specialization"
+                                label="Specialization"
+                                name="specialization"
+                                value={specialization}
+                                onChange={(e) => setSpecialization(e.target.value)}
+                            />
+                        </>
+                    )}
                     <Button
                         type="submit"
                         fullWidth
