@@ -1,12 +1,14 @@
-import { useState, useEffect } from 'react';
-import { Container, Typography, List, ListItem, ListItemText, Paper, Button, Chip } from '@mui/material';
-import api from '../services/api';
-
+import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
+import { Calendar, Clock, User } from 'lucide-react';
 
 const Appointments = () => {
-    const [appointments, setAppointments] = useState([]);
     const { user } = useAuth();
+    const [appointments, setAppointments] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (user && user.id) {
@@ -19,38 +21,64 @@ const Appointments = () => {
             const response = await api.get(`/appointments/patient/${user.id}`);
             setAppointments(response.data);
         } catch (error) {
-            console.error(error);
+            console.error('Error fetching appointments', error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const handleCancel = async (id) => {
-        try {
-            await api.put(`/appointments/${id}/cancel`);
-            fetchAppointments();
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
     return (
-        <Container maxWidth="md" sx={{ mt: 4 }}>
-            <Typography variant="h4" gutterBottom>My Appointments</Typography>
-            <Paper>
-                <List>
-                    {appointments.map(apt => (
-                        <ListItem key={apt.id} divider secondaryAction={
-                            apt.status === 'BOOKED' && <Button color="error" onClick={() => handleCancel(apt.id)}>Cancel</Button>
-                        }>
-                            <ListItemText
-                                primary={`Dr. ${apt.doctorName}`}
-                                secondary={`Date: ${apt.date} Time: ${apt.time}`}
-                            />
-                            <Chip label={apt.status} color={apt.status === 'BOOKED' ? 'primary' : apt.status === 'CANCELLED' ? 'error' : 'success'} />
-                        </ListItem>
-                    ))}
-                </List>
-            </Paper>
-        </Container>
+        <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
+            <div className="max-w-4xl mx-auto space-y-6">
+                <div>
+                    <h1 className="text-4xl font-bold gradient-text mb-2">My Appointments</h1>
+                    <p className="text-muted-foreground text-lg">View and manage your upcoming appointments</p>
+                </div>
+
+                {loading ? (
+                    <div className="text-center py-12">
+                        <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+                    </div>
+                ) : appointments.length === 0 ? (
+                    <Card className="border-2">
+                        <CardContent className="text-center py-12">
+                            <Calendar className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                            <p className="text-xl text-muted-foreground">No appointments found</p>
+                        </CardContent>
+                    </Card>
+                ) : (
+                    <div className="space-y-4">
+                        {appointments.map((appointment) => (
+                            <Card key={appointment.id} className="border-2 hover:shadow-lg transition-all">
+                                <CardHeader>
+                                    <div className="flex items-start justify-between">
+                                        <div>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <User className="h-5 w-5" />
+                                                Dr. {appointment.doctorName}
+                                            </CardTitle>
+                                            <CardDescription className="flex items-center gap-4 mt-2">
+                                                <span className="flex items-center gap-1">
+                                                    <Calendar className="h-4 w-4" />
+                                                    {appointment.date}
+                                                </span>
+                                                <span className="flex items-center gap-1">
+                                                    <Clock className="h-4 w-4" />
+                                                    {appointment.time}
+                                                </span>
+                                            </CardDescription>
+                                        </div>
+                                        <Badge variant={appointment.status === 'BOOKED' ? 'default' : 'secondary'}>
+                                            {appointment.status}
+                                        </Badge>
+                                    </div>
+                                </CardHeader>
+                            </Card>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </div>
     );
 };
 

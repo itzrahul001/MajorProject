@@ -25,6 +25,16 @@ public class HospitalController {
         return new ResponseEntity<>(hospitalService.createHospital(hospitalDto), HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/bulk")
+    public ResponseEntity<List<HospitalDto>> createHospitals(
+            @RequestBody List<HospitalDto> hospitalDtos) {
+
+        List<HospitalDto> saved = hospitalService.createHospitals(hospitalDtos);
+
+        return new ResponseEntity<>(saved, HttpStatus.CREATED);
+    }
+
     @GetMapping
     public ResponseEntity<List<HospitalDto>> getAllHospitals() {
         return ResponseEntity.ok(hospitalService.getAllHospitals());

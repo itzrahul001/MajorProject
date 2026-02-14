@@ -1,16 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Container, Grid, Paper, Typography, Button, Box, Card, CardContent, CardActions, Avatar, Divider, List, ListItem, ListItemText, Chip } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import api from '../services/api';
-import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
-import EventIcon from '@mui/icons-material/Event';
-import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
-import PersonIcon from '@mui/icons-material/Person';
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
+import { Calendar, Users, FileText, AlertCircle, TrendingUp, Activity, Clock, Stethoscope } from 'lucide-react';
 
 const Dashboard = () => {
     const { user } = useAuth();
-    const navigate = useNavigate();
     const [appointments, setAppointments] = useState([]);
     const [doctors, setDoctors] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -28,7 +26,7 @@ const Dashboard = () => {
                 api.get('/doctors')
             ]);
             setAppointments(appointmentsRes.data);
-            setDoctors(doctorsRes.data.slice(0, 3)); // Show top 3 doctors
+            setDoctors(doctorsRes.data.slice(0, 3));
         } catch (error) {
             console.error("Error fetching dashboard data", error);
         } finally {
@@ -36,108 +34,197 @@ const Dashboard = () => {
         }
     };
 
+    const stats = [
+        {
+            title: "Upcoming Appointments",
+            value: appointments.filter(a => a.status === 'BOOKED').length,
+            icon: Calendar,
+            color: "text-blue-600",
+            bgColor: "bg-blue-50 dark:bg-blue-950/20",
+            link: "/appointments"
+        },
+        {
+            title: "Medical Records",
+            value: "--",
+            icon: FileText,
+            color: "text-purple-600",
+            bgColor: "bg-purple-50 dark:bg-purple-950/20",
+            link: "/medical-records"
+        },
+        {
+            title: "Available Doctors",
+            value: doctors.length,
+            icon: Users,
+            color: "text-green-600",
+            bgColor: "bg-green-50 dark:bg-green-950/20",
+            link: "/doctors"
+        }
+    ];
+
     return (
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Box>
-                    <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#1976d2' }}>
-                        Welcome, {user?.name || 'Patient'}!
-                    </Typography>
-                    <Typography variant="subtitle1" color="text.secondary">
-                        Here's your health overview.
-                    </Typography>
-                </Box>
-                <Button variant="contained" color="error" startIcon={<LocalHospitalIcon />} component={Link} to="/emergency" size="large">
-                    Emergency
-                </Button>
-            </Box>
+        <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
+            <div className="max-w-7xl mx-auto space-y-8">
+                {/* Header */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h1 className="text-4xl font-bold gradient-text mb-2">
+                            Welcome back, {user?.name || 'User'}!
+                        </h1>
+                        <p className="text-muted-foreground text-lg">
+                            Here's your health overview for today
+                        </p>
+                    </div>
+                    <Link to="/emergency">
+                        <Button variant="destructive" size="lg" className="gap-2">
+                            <AlertCircle className="h-5 w-5" />
+                            Emergency
+                        </Button>
+                    </Link>
+                </div>
 
-            <Grid container spacing={3}>
-                {/* Stats / Quick Cards */}
-                <Grid item xs={12} md={4}>
-                    <Paper sx={{ p: 3, display: 'flex', flexDirection: 'column', height: 180, bgcolor: '#e3f2fd' }}>
-                        <Typography variant="h6" color="primary" gutterBottom>Upcoming Appointments</Typography>
-                        <Typography variant="h3" sx={{ fontWeight: 'bold', my: 2 }}>{appointments.filter(a => a.status === 'BOOKED').length}</Typography>
-                        <Button size="small" component={Link} to="/appointments">View All</Button>
-                    </Paper>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                    <Paper sx={{ p: 3, display: 'flex', flexDirection: 'column', height: 180, bgcolor: '#f3e5f5' }}>
-                        <Typography variant="h6" color="secondary" gutterBottom>Medical Records</Typography>
-                        <Typography variant="h3" sx={{ fontWeight: 'bold', my: 2 }}>--</Typography> {/* Placeholder if no API yet */}
-                        <Button size="small" color="secondary" component={Link} to="/medical-records">Upload / View</Button>
-                    </Paper>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                    <Paper sx={{ p: 3, display: 'flex', flexDirection: 'column', height: 180, bgcolor: '#e8f5e9' }}>
-                        <Typography variant="h6" color="success.main" gutterBottom>Find Doctors</Typography>
-                        <Typography variant="body1" sx={{ my: 2 }}>Search by name or specialization.</Typography>
-                        <Button variant="outlined" color="success" component={Link} to="/doctors">Search Now</Button>
-                    </Paper>
-                </Grid>
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {stats.map((stat, index) => (
+                        <Link key={index} to={stat.link}>
+                            <Card className="hover:shadow-lg transition-all hover:scale-105 cursor-pointer border-2">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium">
+                                        {stat.title}
+                                    </CardTitle>
+                                    <div className={`p-2 ${stat.bgColor} rounded-lg`}>
+                                        <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                                    </div>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-3xl font-bold">{stat.value}</div>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        Click to view details
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        </Link>
+                    ))}
+                </div>
 
-                {/* Main Content: Upcoming Appointments */}
-                <Grid item xs={12} md={8}>
-                    <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-                        <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                            <EventIcon sx={{ mr: 1 }} /> Upcoming Appointments
-                        </Typography>
-                        <Divider />
-                        {appointments.length === 0 ? (
-                            <Box sx={{ p: 3, textAlign: 'center' }}>
-                                <Typography color="text.secondary">No upcoming appointments.</Typography>
-                                <Button sx={{ mt: 2 }} variant="contained" component={Link} to="/doctors">Book Appointment</Button>
-                            </Box>
-                        ) : (
-                            <List>
-                                {appointments.slice(0, 3).map((apt) => (
-                                    <ListItem key={apt.id} divider>
-                                        <ListItemText
-                                            primary={`Dr. ${apt.doctorName}`}
-                                            secondary={`Date: ${apt.date} | Time: ${apt.time}`}
-                                        />
-                                        <Chip label={apt.status} color={apt.status === 'BOOKED' ? 'primary' : 'default'} size="small" />
-                                    </ListItem>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Appointments Section */}
+                    <Card className="lg:col-span-2 border-2">
+                        <CardHeader>
+                            <div className="flex items-center gap-2">
+                                <Calendar className="h-5 w-5 text-primary" />
+                                <CardTitle>Upcoming Appointments</CardTitle>
+                            </div>
+                            <CardDescription>
+                                Your scheduled medical appointments
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {appointments.length === 0 ? (
+                                <div className="text-center py-12">
+                                    <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                                    <p className="text-muted-foreground mb-4">No upcoming appointments</p>
+                                    <Link to="/doctors">
+                                        <Button>Book Appointment</Button>
+                                    </Link>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {appointments.slice(0, 3).map((apt) => (
+                                        <div key={apt.id} className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
+                                            <div className="flex items-center gap-4">
+                                                <div className="p-3 bg-primary/10 rounded-full">
+                                                    <Stethoscope className="h-5 w-5 text-primary" />
+                                                </div>
+                                                <div>
+                                                    <p className="font-semibold">Dr. {apt.doctorName}</p>
+                                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                        <Clock className="h-3 w-3" />
+                                                        <span>{apt.date} at {apt.time}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <Badge variant={apt.status === 'BOOKED' ? 'default' : 'secondary'}>
+                                                {apt.status}
+                                            </Badge>
+                                        </div>
+                                    ))}
+                                    <Link to="/appointments">
+                                        <Button variant="outline" className="w-full">View All Appointments</Button>
+                                    </Link>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {/* Top Doctors Section */}
+                    <Card className="border-2">
+                        <CardHeader>
+                            <div className="flex items-center gap-2">
+                                <Users className="h-5 w-5 text-primary" />
+                                <CardTitle>Top Doctors</CardTitle>
+                            </div>
+                            <CardDescription>
+                                Recommended specialists
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                {doctors.map((doctor) => (
+                                    <div key={doctor.id} className="p-4 rounded-lg border hover:bg-muted/50 transition-colors">
+                                        <p className="font-semibold">{doctor.name}</p>
+                                        <p className="text-sm text-muted-foreground mb-2">{doctor.specialization}</p>
+                                        <Link to="/doctors">
+                                            <Button size="sm" variant="outline" className="w-full">
+                                                Book Appointment
+                                            </Button>
+                                        </Link>
+                                    </div>
                                 ))}
-                            </List>
-                        )}
-                        {appointments.length > 0 && (
-                            <Button sx={{ mt: 1 }} component={Link} to="/appointments">View All Appointments</Button>
-                        )}
-                    </Paper>
-                </Grid>
+                                <Link to="/doctors">
+                                    <Button variant="outline" className="w-full">View All Doctors</Button>
+                                </Link>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
 
-                {/* Sidebar: Top Doctors */}
-                <Grid item xs={12} md={4}>
-                    <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-                        <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                            <PersonIcon sx={{ mr: 1 }} /> Top Doctors
-                        </Typography>
-                        <Divider sx={{ mb: 2 }} />
-                        <Grid container spacing={2}>
-                            {doctors.map((doctor) => (
-                                <Grid item xs={12} key={doctor.id}>
-                                    <Card variant="outlined">
-                                        <CardContent sx={{ pb: 1 }}>
-                                            <Typography variant="subtitle1" component="div">
-                                                {doctor.name}
-                                            </Typography>
-                                            <Typography sx={{ mb: 1.5 }} color="text.secondary" variant="body2">
-                                                {doctor.specialization}
-                                            </Typography>
-                                        </CardContent>
-                                        <CardActions>
-                                            <Button size="small" component={Link} to="/doctors">Book</Button>
-                                        </CardActions>
-                                    </Card>
-                                </Grid>
-                            ))}
-                        </Grid>
-                        <Button sx={{ mt: 2 }} variant="outlined" fullWidth component={Link} to="/doctors">View All Doctors</Button>
-                    </Paper>
-                </Grid>
-            </Grid>
-        </Container>
+                {/* Quick Actions */}
+                <Card className="border-2">
+                    <CardHeader>
+                        <CardTitle>Quick Actions</CardTitle>
+                        <CardDescription>Common tasks and shortcuts</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <Link to="/doctors">
+                                <Button variant="outline" className="w-full h-24 flex-col gap-2">
+                                    <Users className="h-6 w-6" />
+                                    <span>Find Doctors</span>
+                                </Button>
+                            </Link>
+                            <Link to="/appointments">
+                                <Button variant="outline" className="w-full h-24 flex-col gap-2">
+                                    <Calendar className="h-6 w-6" />
+                                    <span>My Appointments</span>
+                                </Button>
+                            </Link>
+                            <Link to="/medical-records">
+                                <Button variant="outline" className="w-full h-24 flex-col gap-2">
+                                    <FileText className="h-6 w-6" />
+                                    <span>Medical Records</span>
+                                </Button>
+                            </Link>
+                            <Link to="/emergency">
+                                <Button variant="destructive" className="w-full h-24 flex-col gap-2">
+                                    <AlertCircle className="h-6 w-6" />
+                                    <span>Emergency</span>
+                                </Button>
+                            </Link>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
     );
 };
 

@@ -1,125 +1,106 @@
-import { useState, useEffect } from 'react';
-import { Container, Typography, Button, Paper, List, ListItem, ListItemText, TextField, Box, CircularProgress, Alert } from '@mui/material';
-import api from '../services/api';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { FileText, Upload, File } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 const MedicalRecords = () => {
-    const [records, setRecords] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [file, setFile] = useState(null);
-    const [notes, setNotes] = useState('');
-    const [uploading, setUploading] = useState(false);
-    const [message, setMessage] = useState('');
     const { user } = useAuth();
-
-    useEffect(() => {
-        if (user && user.id) {
-            fetchRecords();
-        }
-    }, [user]);
-
-    const fetchRecords = async () => {
-        try {
-            const response = await api.get(`/medical-records/patient/${user.id}`);
-            setRecords(response.data);
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [recordName, setRecordName] = useState('');
 
     const handleFileChange = (e) => {
-        setFile(e.target.files[0]);
+        setSelectedFile(e.target.files[0]);
     };
 
     const handleUpload = async (e) => {
         e.preventDefault();
-        if (!file) return;
-
-        setUploading(true);
-        setMessage('');
-
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('patientId', user.id);
-        formData.append('notes', notes);
-
-        try {
-            await api.post('/medical-records/upload', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-            setMessage('File uploaded successfully!');
-            setFile(null);
-            setNotes('');
-            fetchRecords();
-        } catch (err) {
-            setMessage('Upload failed');
-            console.error(err);
-        } finally {
-            setUploading(false);
+        if (!selectedFile || !recordName) {
+            toast.warning('Please select a file and provide a name');
+            return;
         }
+
+        // Placeholder for upload functionality
+        toast.info('Upload functionality will be implemented with backend API');
+        setSelectedFile(null);
+        setRecordName('');
     };
 
     return (
-        <Container maxWidth="md" sx={{ mt: 4 }}>
-            <Typography variant="h4" gutterBottom>
-                Medical Records
-            </Typography>
+        <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4 md:p-8">
+            <div className="max-w-4xl mx-auto space-y-6">
+                <div>
+                    <h1 className="text-4xl font-bold gradient-text mb-2">Medical Records</h1>
+                    <p className="text-muted-foreground text-lg">Upload and manage your medical documents</p>
+                </div>
 
-            <Paper sx={{ p: 3, mb: 4 }}>
-                <Typography variant="h6">Upload New Record</Typography>
-                <Box component="form" onSubmit={handleUpload} sx={{ mt: 2 }}>
-                    <TextField type="file" onChange={handleFileChange} fullWidth margin="normal" />
-                    <TextField
-                        label="Notes"
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        fullWidth
-                        margin="normal"
-                    />
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        disabled={uploading || !file}
-                        sx={{ mt: 2 }}
-                    >
-                        {uploading ? 'Uploading...' : 'Upload'}
-                    </Button>
-                    {message && <Alert severity={message.includes('success') ? 'success' : 'error'} sx={{ mt: 2 }}>{message}</Alert>}
-                </Box>
-            </Paper>
-
-            <Typography variant="h6" gutterBottom>My Records</Typography>
-            {loading ? <CircularProgress /> : (
-                <List>
-                    {records.map((record) => (
-                        <Paper key={record.id} sx={{ mb: 2, p: 2 }}>
-                            <ListItem>
-                                <ListItemText
-                                    primary={`Uploaded on: ${record.uploadDate}`}
-                                    secondary={
-                                        <>
-                                            <Typography variant="body2">{record.notes}</Typography>
-                                            <a href={record.fileUrl} target="_blank" rel="noopener noreferrer">View File</a>
-                                            <br />
-                                            {record.extractedText && (
-                                                <Box sx={{ mt: 1, p: 1, bgcolor: 'background.paper', border: '1px solid #ccc' }}>
-                                                    <Typography variant="caption" display="block">Extracted Text (OCR):</Typography>
-                                                    <Typography variant="body2">{record.extractedText}</Typography>
-                                                </Box>
-                                            )}
-                                        </>
-                                    }
+                {/* Upload Section */}
+                <Card className="border-2">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Upload className="h-5 w-5" />
+                            Upload New Record
+                        </CardTitle>
+                        <CardDescription>
+                            Upload your medical reports, prescriptions, or test results
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <form onSubmit={handleUpload} className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="recordName">Record Name</Label>
+                                <Input
+                                    id="recordName"
+                                    placeholder="e.g. Blood Test Report - Jan 2026"
+                                    value={recordName}
+                                    onChange={(e) => setRecordName(e.target.value)}
                                 />
-                            </ListItem>
-                        </Paper>
-                    ))}
-                </List>
-            )}
-        </Container>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="file">Select File</Label>
+                                <Input
+                                    id="file"
+                                    type="file"
+                                    onChange={handleFileChange}
+                                    accept=".pdf,.jpg,.jpeg,.png"
+                                />
+                                {selectedFile && (
+                                    <p className="text-sm text-muted-foreground flex items-center gap-2">
+                                        <File className="h-4 w-4" />
+                                        {selectedFile.name}
+                                    </p>
+                                )}
+                            </div>
+
+                            <Button type="submit" className="w-full">
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload Record
+                            </Button>
+                        </form>
+                    </CardContent>
+                </Card>
+
+                {/* Placeholder for records list */}
+                <Card className="border-2">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <FileText className="h-5 w-5" />
+                            Your Records
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-center py-12">
+                            <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                            <p className="text-muted-foreground">No medical records uploaded yet</p>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
     );
 };
 

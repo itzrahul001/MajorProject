@@ -15,4 +15,6 @@ public interface HospitalService {
     void deleteHospital(Long id);
 
     List<HospitalDto> findNearestHospitals(double lat, double lon, double radius);
+
+    List<HospitalDto> createHospitals(List<HospitalDto> hospitalDtos);
 }

@@ -87,4 +87,14 @@ public class HospitalServiceImpl implements HospitalService {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c; // convert to kilometers
     }
+
+    @Override
+    public List<HospitalDto> createHospitals(List<HospitalDto> hospitalDtos) {
+        List<Hospital> hospitals = hospitalDtos.stream()
+                .map(hospitalDto -> modelMapper.map(hospitalDto, Hospital.class))
+                .collect(Collectors.toList());
+        List<Hospital> savedHospitals = hospitalRepository.saveAll(hospitals);
+        return savedHospitals.stream().map(hospital -> modelMapper.map(hospital, HospitalDto.class))
+                .collect(Collectors.toList());
+    }
 }
